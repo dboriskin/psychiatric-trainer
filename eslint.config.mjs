@@ -23,7 +23,7 @@ const config = [
     },
     rules: {
       // Turn off rules that TypeScript handles
-      'no-unused-vars': 'off',
+      'no-unused-vars': 'on',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
