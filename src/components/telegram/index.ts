@@ -5,3 +5,4 @@ export * from './TelegramPopup';
 export * from './TelegramAlert';
 export * from './TelegramConfirm';
 export * from './TelegramDebugPanel';
+export * from './ButtonFallback';

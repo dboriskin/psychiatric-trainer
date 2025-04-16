@@ -41,6 +41,73 @@ export interface PatientStory {
     };
   }
   
+  // Фабрика для создания заглушек кейсов
+  function createEmptyCase(caseId: string, categoryId: string, title: string, patientName: string, patientAge: number): CaseDetail {
+    return {
+      id: caseId,
+      categoryId,
+      title,
+      patientName,
+      patientAge,
+      fullDescription: `Заглушка описания для ${title}`,
+      patientNotes: [
+        {
+          title: 'О пациенте',
+          content: `${patientName}, ${patientAge} лет. Это заглушка для демонстрации навигации. В полной версии здесь будет подробная информация о пациенте.`
+        },
+        {
+          title: 'Анамнез',
+          content: 'Заглушка анамнеза. Здесь будут данные о предыдущих состояниях и истории болезни.'
+        }
+      ],
+      patientStories: [
+        {
+          id: 'story-1',
+          title: 'История пациента',
+          backgroundImage: 'https://via.placeholder.com/800x1200/333333/FFFFFF?text=История+пациента',
+          content: 'Заглушка для истории пациента. В полной версии здесь будет описание случая от первого лица или со слов врача.'
+        }
+      ],
+      consultationChatId: 'demoChatId',
+      diagnosisOptions: [
+        {
+          id: 'diagnosis-1',
+          name: 'Заглушка диагноза 1',
+          isCorrect: true,
+          explanation: 'Это правильный диагноз для демонстрации.'
+        },
+        {
+          id: 'diagnosis-2',
+          name: 'Заглушка диагноза 2',
+          isCorrect: false,
+          explanation: 'Это неправильный диагноз для демонстрации.'
+        }
+      ],
+      treatmentOptions: [
+        {
+          id: 'treatment-1',
+          name: 'Заглушка лечения 1',
+          description: 'Описание первого варианта лечения.',
+          outcomes: 'Результаты первого варианта лечения.',
+          isRecommended: true
+        },
+        {
+          id: 'treatment-2',
+          name: 'Заглушка лечения 2',
+          description: 'Описание второго варианта лечения.',
+          outcomes: 'Результаты второго варианта лечения.',
+          isRecommended: false
+        }
+      ],
+      expertCommentary: {
+        title: 'Комментарий эксперта',
+        basicContent: 'Базовый комментарий эксперта для демонстрации функциональности.',
+        extendedContent: 'Расширенный комментарий эксперта, который становится доступен после изучения всех вариантов лечения.',
+        videoUrl: ''
+      }
+    };
+  }
+  
   export const mockCaseDetails: Record<string, CaseDetail> = {
     'postpartum-depression': {
       id: 'postpartum-depression',
@@ -133,11 +200,42 @@ export interface PatientStory {
         extendedContent: 'При лечении послеродовой депрессии необходимо учитывать специфику перинатального периода. СИОЗС, особенно сертралин, считаются безопасными при грудном вскармливании. Важно также работать с парой мать-ребенок, улучшая их взаимодействие, и привлекать к поддержке других членов семьи. Следует оценить риск суицида и при необходимости принять меры для обеспечения безопасности пациентки и ребенка.',
         videoUrl: 'https://example.com/expert-video.mp4'
       }
-    }
-    // Add other case details as needed
+    },
+    
+    // Создаем заглушки для остальных кейсов
+    'bipolar-disorder': createEmptyCase(
+      'bipolar-disorder', 
+      'mood-disorders', 
+      'Биполярное расстройство', 
+      'Сергей', 
+      34
+    ),
+    
+    'dysthymia': createEmptyCase(
+      'dysthymia', 
+      'mood-disorders', 
+      'Дистимия', 
+      'Ольга', 
+      42
+    ),
+    
+    'panic-disorder': createEmptyCase(
+      'panic-disorder', 
+      'anxiety-disorders', 
+      'Паническое расстройство', 
+      'Михаил', 
+      25
+    ),
+    
+    'ocd': createEmptyCase(
+      'ocd', 
+      'anxiety-disorders', 
+      'Обсессивно-компульсивное расстройство', 
+      'Екатерина', 
+      31
+    )
   };
   
   export const getCaseDetailById = (id: string): CaseDetail | undefined => {
     return mockCaseDetails[id];
   };
-  
