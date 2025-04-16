@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TelegramMainButton, TelegramBackButton, ButtonFallback } from '../telegram';
 import { useNavigationStore } from '../../store/navigationStore';
 import { CaseDetail } from '../../services/api';
+import { CaseNavigation } from '../base/CaseNavigation';
 
 interface TreatmentModuleProps {
   caseDetail: CaseDetail;
@@ -36,6 +37,9 @@ export const TreatmentModule: React.FC<TreatmentModuleProps> = ({ caseDetail }) 
       </div>
 
       <div className="p-4">
+        {/* Навигация для возврата к списку кейсов и категорий */}
+        <CaseNavigation className="mb-4" />
+        
         <div className="bg-white rounded-xl shadow-md p-4 mb-6">
           <h2 className="text-lg font-bold mb-4">Выберите стратегию лечения:</h2>
           <div className="space-y-4">
@@ -70,7 +74,7 @@ export const TreatmentModule: React.FC<TreatmentModuleProps> = ({ caseDetail }) 
         </div>
 
         {selectedTreatment && (
-          <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="bg-white rounded-xl shadow-md p-4 mb-6">
             <h3 className="font-bold mb-2">Подробная информация:</h3>
             <p className="mb-4">
               {caseDetail.treatmentOptions.find(t => t.id === selectedTreatment)?.description}
@@ -85,6 +89,21 @@ export const TreatmentModule: React.FC<TreatmentModuleProps> = ({ caseDetail }) 
             )}
           </div>
         )}
+        
+        {/* Кнопка продолжения для лучшей видимости */}
+        <div className="mt-6">
+          <button 
+            onClick={handleContinue}
+            disabled={!selectedTreatment}
+            className={`w-full py-3 rounded-lg font-medium ${
+              selectedTreatment 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            Перейти к результатам
+          </button>
+        </div>
       </div>
 
       {/* Back Button */}

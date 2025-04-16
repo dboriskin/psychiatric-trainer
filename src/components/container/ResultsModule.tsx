@@ -3,6 +3,7 @@ import { TelegramMainButton, TelegramBackButton, ButtonFallback } from '../teleg
 import { useNavigationStore } from '../../store/navigationStore';
 import { CaseDetail } from '../../services/api';
 import { ProgressIndicator } from '../base';
+import { CaseNavigation } from '../base/CaseNavigation';
 
 interface ResultsModuleProps {
   caseDetail: CaseDetail;
@@ -51,6 +52,9 @@ export const ResultsModule: React.FC<ResultsModuleProps> = ({ caseDetail }) => {
       </div>
 
       <div className="p-4">
+        {/* Навигация для возврата к списку кейсов и категорий */}
+        <CaseNavigation className="mb-4" />
+        
         <div className="bg-white rounded-xl shadow-md p-4 mb-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-lg font-bold">Варианты лечения:</h2>
@@ -89,7 +93,7 @@ export const ResultsModule: React.FC<ResultsModuleProps> = ({ caseDetail }) => {
         </div>
 
         {selectedOption && (
-          <div className="bg-white rounded-xl shadow-md p-4">
+          <div className="bg-white rounded-xl shadow-md p-4 mb-6">
             <h3 className="font-bold mb-3">
               {caseDetail.treatmentOptions.find(t => t.id === selectedOption)?.name}
             </h3>
@@ -119,12 +123,25 @@ export const ResultsModule: React.FC<ResultsModuleProps> = ({ caseDetail }) => {
         )}
         
         {!allOptionsViewed && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 mt-4">
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 mt-4 mb-6">
             <p className="text-sm text-yellow-800">
               <span className="font-bold">Подсказка:</span> Изучите все варианты лечения, чтобы получить доступ к расширенному комментарию эксперта.
             </p>
           </div>
         )}
+        
+        {/* Кнопка перехода к комментарию эксперта для лучшей видимости */}
+        <div className="mt-6">
+          <button 
+            onClick={handleContinue}
+            className="w-full bg-primary text-white py-3 rounded-lg font-medium"
+          >
+            {allOptionsViewed 
+              ? "Перейти к комментарию эксперта" 
+              : "Продолжить"
+            }
+          </button>
+        </div>
       </div>
 
       {/* Back Button */}

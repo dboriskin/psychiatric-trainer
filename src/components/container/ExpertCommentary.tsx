@@ -5,6 +5,7 @@ import { useTelegram } from '../telegram/TelegramProvider';
 import { CaseDetail } from '../../services/api';
 import { useProgress } from '../../hooks/useProgress';
 import { CaseNavigation } from '../base/CaseNavigation';
+
 interface ExpertCommentaryProps {
   caseDetail: CaseDetail;
 }
@@ -60,7 +61,7 @@ export const ExpertCommentary: React.FC<ExpertCommentaryProps> = ({ caseDetail }
       <div className="p-4">
         {/* Навигация для возврата к списку кейсов и категорий */}
         <CaseNavigation className="mb-4" />
-
+        
         {/* Видеоплеер (заглушка) */}
         <div className="bg-gray-800 aspect-video rounded-xl flex items-center justify-center mb-6">
           <div className="text-white text-center p-4">
@@ -105,7 +106,6 @@ export const ExpertCommentary: React.FC<ExpertCommentaryProps> = ({ caseDetail }
                 <p>Расширенный комментарий доступен. Нажмите "Показать", чтобы увидеть дополнительную информацию от эксперта.</p>
               </div>
             )}
-            
           </div>
         ) : (
           <div className="bg-gray-100 rounded-xl shadow-md p-4 border border-gray-300">
@@ -120,6 +120,16 @@ export const ExpertCommentary: React.FC<ExpertCommentaryProps> = ({ caseDetail }
             </p>
           </div>
         )}
+        
+        {/* Кнопка завершения кейса для лучшей видимости */}
+        <div className="mt-8">
+          <button 
+            onClick={handleFinish}
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-medium"
+          >
+            Завершить случай и вернуться к списку категорий
+          </button>
+        </div>
       </div>
 
       {/* Back Button */}
