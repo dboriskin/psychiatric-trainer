@@ -54,16 +54,6 @@ export const PatientStories: React.FC<PatientStoriesProps> = ({ caseDetail }) =>
         className="h-full"
       />
       
-      {/* Кнопка продолжения для лучшей видимости */}
-      <div className="absolute bottom-24 left-4 right-4">
-        <button 
-          onClick={handleContinue}
-          className="w-full bg-primary text-white py-3 rounded-lg font-medium"
-        >
-          Продолжить
-        </button>
-      </div>
-      
       {/* Back Button */}
       <TelegramBackButton onClick={handleBack} />
 

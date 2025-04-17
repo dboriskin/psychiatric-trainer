@@ -89,21 +89,6 @@ export const TreatmentModule: React.FC<TreatmentModuleProps> = ({ caseDetail }) 
             )}
           </div>
         )}
-        
-        {/* Кнопка продолжения для лучшей видимости */}
-        <div className="mt-6">
-          <button 
-            onClick={handleContinue}
-            disabled={!selectedTreatment}
-            className={`w-full py-3 rounded-lg font-medium ${
-              selectedTreatment 
-                ? 'bg-primary text-white' 
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            Перейти к результатам
-          </button>
-        </div>
       </div>
 
       {/* Back Button */}
@@ -111,14 +96,14 @@ export const TreatmentModule: React.FC<TreatmentModuleProps> = ({ caseDetail }) 
 
       {/* Main Button */}
       <TelegramMainButton
-        text="Перейти к результатам"
+        text="К результатам"
         onClick={handleContinue}
         disabled={!selectedTreatment}
       />
       
       {/* Fallback кнопки для браузера */}
       <ButtonFallback
-        mainButtonText="Перейти к результатам"
+        mainButtonText="К результатам"
         onMainButtonClick={handleContinue}
         onBackButtonClick={handleBack}
       />

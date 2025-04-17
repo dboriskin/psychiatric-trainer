@@ -3,7 +3,7 @@ import { useUserStore } from '../store/userStore';
 import { useCaseStore } from '../store/caseStore';
 import { useTelegram } from '../components/telegram';
 import { api } from '../services/api';
-import { cloudStorage, deviceStorage } from '../utils/telegramStorage';
+import { storage } from '../utils/telegramStorage';
 import { StageType } from '../store/navigationStore';
 
 export interface CaseProgress {
@@ -32,50 +32,23 @@ export function useProgress() {
         setLoading(true);
         setError(null);
 
-        // Try to get progress from Telegram CloudStorage
-        if (webApp?.CloudStorage) {
-          const key = `progress_${currentCaseId}`;
-          try {
-            const value = await cloudStorage.getItem(key);
-            if (value) {
-              const parsedProgress = JSON.parse(value) as CaseProgress;
-              setProgress(parsedProgress);
-              updateUserProgress(currentCaseId, parsedProgress);
-              setLoading(false);
-              return;
-            }
-          } catch (err) {
-            console.error('Failed to load progress from CloudStorage:', err);
-            // Fall through to next storage method
-          }
-
-          // Fallback to DeviceStorage
-          try {
-            const value = await deviceStorage.getItem(key);
-            if (value) {
-              const parsedProgress = JSON.parse(value) as CaseProgress;
-              setProgress(parsedProgress);
-              updateUserProgress(currentCaseId, parsedProgress);
-              setLoading(false);
-              return;
-            }
-          } catch (err) {
-            console.error('Failed to load progress from DeviceStorage:', err);
-            // Fall through to localStorage
-          }
-        }
-
-        // If CloudStorage and DeviceStorage failed, check localStorage
+        // Используем единую функцию getItem из нашего безопасного хранилища
         const key = `progress_${currentCaseId}`;
-        const storedProgress = localStorage.getItem(key);
-        if (storedProgress) {
-          const parsedProgress = JSON.parse(storedProgress) as CaseProgress;
-          setProgress(parsedProgress);
-          updateUserProgress(currentCaseId, parsedProgress);
+        const value = await storage.getItem(key);
+        
+        if (value) {
+          try {
+            const parsedProgress = JSON.parse(value) as CaseProgress;
+            setProgress(parsedProgress);
+            updateUserProgress(currentCaseId, parsedProgress);
+          } catch (parseErr) {
+            console.error('Failed to parse progress JSON:', parseErr);
+            setError('Ошибка при обработке данных о прогрессе');
+          }
         }
       } catch (err) {
         console.error('Failed to load progress:', err);
-        setError('Failed to load progress');
+        setError('Не удалось загрузить прогресс');
       } finally {
         setLoading(false);
       }
@@ -103,36 +76,24 @@ export function useProgress() {
       setProgress(newProgress);
       updateUserProgress(currentCaseId, newProgress);
 
-      // Save to CloudStorage
+      // Сохраняем в нашем безопасном хранилище
       const key = `progress_${currentCaseId}`;
-      if (webApp?.CloudStorage) {
-        try {
-          await cloudStorage.setItem(key, JSON.stringify(newProgress));
-        } catch (err) {
-          console.error('Failed to save progress to CloudStorage:', err);
-          // Fallback to DeviceStorage
-          try {
-            await deviceStorage.setItem(key, JSON.stringify(newProgress));
-          } catch (deviceErr) {
-            console.error('Failed to save progress to DeviceStorage:', deviceErr);
-            // Fallback to localStorage
-            localStorage.setItem(key, JSON.stringify(newProgress));
-          }
-        }
-      } else {
-        // If CloudStorage not available, use localStorage
-        localStorage.setItem(key, JSON.stringify(newProgress));
-      }
+      await storage.setItem(key, JSON.stringify(newProgress));
 
       // If user is authenticated, sync with server
       if (userId) {
-        await api.updateProgress(userId, currentCaseId, newProgress);
+        try {
+          await api.updateProgress(userId, currentCaseId, newProgress);
+        } catch (apiErr) {
+          console.warn('Failed to sync progress with server:', apiErr);
+          // Не прерываем выполнение даже при ошибке API
+        }
       }
 
       return newProgress;
     } catch (err) {
       console.error('Failed to update progress:', err);
-      setError('Failed to update progress');
+      setError('Не удалось обновить прогресс');
       return null;
     }
   };

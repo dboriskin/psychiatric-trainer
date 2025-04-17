@@ -73,16 +73,6 @@ export const ConsultationTransition: React.FC<ConsultationTransitionProps> = ({ 
             <span className="font-bold">Подсказка:</span> После завершения консультации в чате, вернитесь сюда и нажмите кнопку «Продолжить» внизу экрана.
           </p>
         </div>
-        
-        {/* Кнопка продолжения для лучшей видимости */}
-        <div className="mt-8">
-          <button 
-            onClick={handleContinue}
-            className="w-full bg-primary text-white py-3 rounded-lg font-medium"
-          >
-            Продолжить к диагностике
-          </button>
-        </div>
       </div>
 
       {/* Back Button */}
@@ -96,7 +86,7 @@ export const ConsultationTransition: React.FC<ConsultationTransitionProps> = ({ 
       
       {/* Fallback кнопки для браузера */}
       <ButtonFallback
-        mainButtonText="Продолжить к диагностике"
+        mainButtonText="К диагностике"
         onMainButtonClick={handleContinue}
         onBackButtonClick={handleBack}
       />

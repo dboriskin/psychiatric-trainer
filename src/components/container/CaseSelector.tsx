@@ -10,9 +10,9 @@ import { getCasesByCategory } from '../../mocks/data/cases';
 export const CaseSelector: React.FC = () => {
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
-  const { setStage, goBack } = useNavigationStore();
+  const { setStage, goBack, enterCase } = useNavigationStore();
   const { currentCategoryId, setCurrentCase } = useCaseStore();
-  const { webApp } = useTelegram();
+  const { webApp, isMocked } = useTelegram();
 
   useEffect(() => {
     const loadCases = async () => {
@@ -40,10 +40,13 @@ export const CaseSelector: React.FC = () => {
     
     // Установка текущего кейса в состояние
     setCurrentCase(caseItem.id);
-    setStage('patient-notes');
+    
+    // Используем новый метод enterCase для перехода к последнему посещенному этапу кейса
+    // или к начальному этапу, если кейс посещается впервые
+    enterCase(caseItem.id);
     
     // Выводим в консоль для отладки
-    console.log(`Selected case: ${caseItem.id}, navigating to patient-notes stage`);
+    console.log(`Selected case: ${caseItem.id}, navigating using enterCase method`);
   };
 
   const handleBackToCategoriesClick = () => {
@@ -141,6 +144,15 @@ export const CaseSelector: React.FC = () => {
         <TelegramMainButton
           text={cases[0].progress ? 'Продолжить последний' : 'Начать первый случай'}
           onClick={() => handleCaseClick(cases[0])}
+        />
+      )}
+      
+      {/* Fallback кнопки для браузера - показываются только в режиме отладки */}
+      {isMocked && (
+        <ButtonFallback
+          mainButtonText={cases.length > 0 && cases[0].progress ? 'Продолжить последний' : 'Начать первый случай'}
+          onMainButtonClick={() => cases.length > 0 && handleCaseClick(cases[0])}
+          onBackButtonClick={handleBackToCategoriesClick}
         />
       )}
     </div>

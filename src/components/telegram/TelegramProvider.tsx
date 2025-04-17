@@ -316,6 +316,11 @@ function createMockWebApp(): TelegramWebApp {
     }
   };
 
+  const savedPlatform = typeof window !== 'undefined' && 
+    window.localStorage ? 
+    window.localStorage.getItem('debug_platform') || 'web' : 
+    'web';
+
   // Create the mock WebApp object
   const mockWebApp: TelegramWebApp = {
     ready: () => console.log('WebApp.ready() called'),
@@ -359,7 +364,7 @@ function createMockWebApp(): TelegramWebApp {
       console.log('showConfirm called with:', message);
       if (callback) setTimeout(() => callback(true), 1000);
     },
-    platform: 'web',
+    platform: savedPlatform,
     colorScheme: 'light',
     version: '6.0',
     isVersionAtLeast: () => true,

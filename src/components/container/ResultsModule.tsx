@@ -129,19 +129,6 @@ export const ResultsModule: React.FC<ResultsModuleProps> = ({ caseDetail }) => {
             </p>
           </div>
         )}
-        
-        {/* Кнопка перехода к комментарию эксперта для лучшей видимости */}
-        <div className="mt-6">
-          <button 
-            onClick={handleContinue}
-            className="w-full bg-primary text-white py-3 rounded-lg font-medium"
-          >
-            {allOptionsViewed 
-              ? "Перейти к комментарию эксперта" 
-              : "Продолжить"
-            }
-          </button>
-        </div>
       </div>
 
       {/* Back Button */}
@@ -150,7 +137,7 @@ export const ResultsModule: React.FC<ResultsModuleProps> = ({ caseDetail }) => {
       {/* Main Button */}
       <TelegramMainButton
         text={allOptionsViewed 
-          ? "Перейти к комментарию эксперта" 
+          ? "К комментарию эксперта" 
           : "Продолжить"
         }
         onClick={handleContinue}
@@ -159,7 +146,7 @@ export const ResultsModule: React.FC<ResultsModuleProps> = ({ caseDetail }) => {
       {/* Fallback кнопки для браузера */}
       <ButtonFallback
         mainButtonText={allOptionsViewed 
-          ? "Перейти к комментарию эксперта" 
+          ? "К комментарию эксперта" 
           : "Продолжить"
         }
         onMainButtonClick={handleContinue}

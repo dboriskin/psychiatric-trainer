@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigationStore, StageType } from '../../store/navigationStore';
+import { usePlatform } from '../../utils/hooks';
 
 interface NavigationMapModalProps {
   onClose: () => void;
@@ -17,6 +18,30 @@ export const NavigationMapModal: React.FC<NavigationMapModalProps> = ({
   isVisible
 }) => {
   const { currentStage, setStage, history } = useNavigationStore();
+  const { isMobile } = usePlatform();
+  
+  // Блокируем скролл body когда модальное окно открыто
+  useEffect(() => {
+    if (isVisible) {
+      // Сохраняем текущую позицию скролла
+      const scrollY = window.scrollY;
+      
+      // Блокируем скролл и фиксируем позицию body
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      // Восстанавливаем скролл при закрытии
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isVisible]);
   
   // Define the stages in the navigation map
   const stages: StageInfo[] = [
@@ -44,19 +69,26 @@ export const NavigationMapModal: React.FC<NavigationMapModalProps> = ({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={onClose}>
-      <div className="bg-white rounded-xl p-4 w-[90%] max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
+    <div 
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" 
+      onClick={onClose}
+    >
+      <div 
+        className={`bg-white rounded-xl ${isMobile ? 'p-3 w-[95%] max-h-[80vh]' : 'p-4 w-[90%] max-w-md'} mx-auto overflow-hidden flex flex-col`} 
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-2 sticky top-0 bg-white py-2 border-b border-gray-100 z-10">
           <h2 className="text-lg font-bold">Карта навигации</h2>
           <button 
-            className="text-gray-600 hover:text-gray-900"
+            className="text-gray-600 hover:text-gray-900 h-8 w-8 flex items-center justify-center"
             onClick={onClose}
+            aria-label="Закрыть"
           >
             ✕
           </button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-y-auto flex-1 p-1">
           {stages.map((stage, index) => (
             <React.Fragment key={stage.id}>
               <div 
@@ -88,14 +120,29 @@ export const NavigationMapModal: React.FC<NavigationMapModalProps> = ({
           ))}
         </div>
 
-        <div className="mt-4 text-center">
-          <button 
-            className="bg-primary text-white py-2 px-4 rounded-lg"
-            onClick={onClose}
-          >
-            Закрыть
-          </button>
-        </div>
+        {/* Закрепленная кнопка внизу модального окна (только на мобильных) */}
+        {isMobile && (
+          <div className="sticky bottom-0 pt-3 pb-1 bg-white border-t border-gray-200 mt-1">
+            <button 
+              className="w-full bg-primary text-white py-2 px-4 rounded-lg"
+              onClick={onClose}
+            >
+              Закрыть
+            </button>
+          </div>
+        )}
+        
+        {/* Кнопка закрытия (только на десктопе) */}
+        {!isMobile && (
+          <div className="mt-4 text-center">
+            <button 
+              className="bg-primary text-white py-2 px-4 rounded-lg"
+              onClick={onClose}
+            >
+              Закрыть
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

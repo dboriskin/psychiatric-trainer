@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigationStore, StageType } from '../../store/navigationStore';
-import { useMobileView } from '../../utils/hooks';
+import { usePlatform } from '../../utils/hooks';
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
@@ -14,8 +14,7 @@ interface StageInfo {
 
 export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const { currentStage, setStage, history } = useNavigationStore();
-  const isMobile = useMobileView();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isMobile } = usePlatform();
   
   // Define the stages for the sidebar
   const stages: StageInfo[] = [
@@ -87,95 +86,45 @@ export const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
   const handleStageClick = (stage: StageType) => {
     if (history.includes(stage)) {
       setStage(stage);
-      if (isMobile) {
-        setSidebarOpen(false);
-      }
     }
   };
 
-  // For mobile, only show the sidebar when it's opened
-  // For desktop, always show the sidebar
-  const showSidebar = !isMobile || sidebarOpen;
+  // На мобильных устройствах полностью скрываем сайдбар,
+  // т.к. его функциональность полностью покрывается навигационной картой
+  // На десктопе показываем сайдбар постоянно
+  if (isMobile) {
+    return <div className="w-full overflow-y-auto">{children}</div>;
+  }
 
   return (
     <div className="flex h-screen">
-      {/* Mobile sidebar toggle */}
-      {isMobile && (
-        <button
-          className={`fixed top-4 left-4 z-50 bg-white rounded-full w-10 h-10 shadow-md flex items-center justify-center ${sidebarOpen ? 'hidden' : ''}`}
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Открыть меню"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      )}
-
-      {/* Sidebar */}
-      {showSidebar && (
-        <div className={`
-          ${isMobile 
-            ? 'fixed inset-0 z-40 bg-black/50 flex' 
-            : 'w-64 bg-white border-r border-gray-200'
-          }
-        `}>
-          <div className={`
-            ${isMobile 
-              ? 'bg-white w-3/4 max-w-xs h-full' 
-              : 'w-full'
-            } overflow-y-auto
-          `}>
-            {/* Mobile close button */}
-            {isMobile && (
-              <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 className="font-bold">Навигация</h2>
-                <button 
-                  className="text-gray-600"
-                  onClick={() => setSidebarOpen(false)}
-                  aria-label="Закрыть меню"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            {/* Stage navigation */}
-            <div className="py-4">
-              {stages.map((stage, index) => (
-                <div 
-                  key={stage.id}
-                  className={`
-                    px-4 py-3 flex items-center space-x-3 transition-colors
-                    ${history.includes(stage.id) 
-                      ? 'cursor-pointer hover:bg-gray-100' 
-                      : 'opacity-50 cursor-not-allowed'
-                    }
-                    ${currentStage === stage.id ? 'bg-primary/10 border-l-4 border-primary' : ''}
-                  `}
-                  onClick={() => handleStageClick(stage.id)}
-                >
-                  {stage.icon}
-                  <span className={currentStage === stage.id ? 'font-bold' : ''}>
-                    {stage.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Overlay click to close for mobile */}
-          {isMobile && (
+      {/* Sidebar - всегда виден только на десктопе */}
+      <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+        <div className="py-4">
+          {stages.map((stage) => (
             <div 
-              className="flex-1"
-              onClick={() => setSidebarOpen(false)}
-            />
-          )}
+              key={stage.id}
+              className={`
+                px-4 py-3 flex items-center space-x-3 transition-colors
+                ${history.includes(stage.id) 
+                  ? 'cursor-pointer hover:bg-gray-100' 
+                  : 'opacity-50 cursor-not-allowed'
+                }
+                ${currentStage === stage.id ? 'bg-primary/10 border-l-4 border-primary' : ''}
+              `}
+              onClick={() => handleStageClick(stage.id)}
+            >
+              {stage.icon}
+              <span className={currentStage === stage.id ? 'font-bold' : ''}>
+                {stage.label}
+              </span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Main content */}
-      <div className={`${isMobile ? 'w-full' : 'flex-1'} overflow-y-auto`}>
+      <div className="flex-1 overflow-y-auto">
         {children}
       </div>
     </div>

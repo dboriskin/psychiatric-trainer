@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigationStore } from '../store/navigationStore';
+import { useCaseStore } from '../store/caseStore';
 import { useTelegram } from './telegram/TelegramProvider';
 import { LoadingSpinner } from './base';
+import { PlatformSwitcher } from './debug/PlatformSwitcher';
 
 // Импортируем все контейнеры
 import { CategoryLibrary } from './container/CategoryLibrary';
@@ -16,33 +18,51 @@ import { ExpertCommentary } from './container/ExpertCommentary';
 
 // Импортируем для данных кейса
 import { useCase } from '../hooks/useCase';
-import { useCaseStore } from '../store/caseStore';
 import { MainLayout } from './layout/MainLayout';
 import { SidebarLayout } from './layout/SidebarLayout';
 
 const App: React.FC = () => {
-  const { currentStage, setStage } = useNavigationStore();
+  const { currentStage, setStage, restoreNavigation } = useNavigationStore();
+  const { currentCaseId, currentCategoryId, restoreState: restoreCaseState } = useCaseStore();
   const { webApp, isReady } = useTelegram();
-  const { currentCaseId } = useCaseStore();
   const { caseDetail, loading: caseLoading } = useCase();
   const [showDebug, setShowDebug] = useState(process.env.NODE_ENV === 'development');
+  const [isAppInitialized, setIsAppInitialized] = useState(false);
 
+  // Восстановление состояния приложения
   useEffect(() => {
-    // На старте устанавливаем categories как начальный экран
-    if (currentStage === '' && isReady) {
-      console.log('App: initializing with categories stage');
-      setStage('categories');
+    if (isReady && !isAppInitialized) {
+      console.log('App: initializing and restoring state');
+      
+      // Попытка восстановить состояние
+      const caseStateRestored = restoreCaseState();
+      const navigationRestored = restoreNavigation();
+      
+      // Если не удалось восстановить состояние, устанавливаем начальный экран
+      if (!navigationRestored) {
+        console.log('App: no saved navigation, setting initial state');
+        setStage('categories', false); // false - не сохранять в localStorage
+      }
+      
+      setIsAppInitialized(true);
     }
+  }, [isReady, isAppInitialized, restoreNavigation, restoreCaseState, setStage]);
 
-    // Signal to Telegram that we've loaded
+  // Сигнализируем Telegram, что приложение загружено
+  useEffect(() => {
     if (webApp && isReady) {
       webApp.ready();
     }
+  }, [webApp, isReady]);
 
-    console.log(`App: Current stage: ${currentStage}, caseId: ${currentCaseId || 'none'}`);
-  }, [currentStage, isReady, setStage, webApp, currentCaseId]);
+  // Для отладки
+  useEffect(() => {
+    if (isAppInitialized) {
+      console.log(`App: Current stage: ${currentStage}, caseId: ${currentCaseId || 'none'}, categoryId: ${currentCategoryId || 'none'}`);
+    }
+  }, [currentStage, currentCaseId, currentCategoryId, isAppInitialized]);
 
-  if (!isReady) {
+  if (!isReady || !isAppInitialized) {
     return (
       <div className="flex items-center justify-center h-screen">
         <LoadingSpinner size="lg" />
@@ -123,7 +143,7 @@ const App: React.FC = () => {
       {renderContent()}
       
       {/* Кнопка для возврата к списку категорий из любого места приложения */}
-      {(currentStage !== 'categories' && process.env.NODE_ENV === 'development') && (
+      {/* {(currentStage !== 'categories' && process.env.NODE_ENV === 'development') && (
         <div className="fixed top-4 left-4 z-50">
           <button
             onClick={handleReturnToCategories}
@@ -132,7 +152,7 @@ const App: React.FC = () => {
             К категориям
           </button>
         </div>
-      )}
+      )} */}
       
       {/* Отладочная информация в режиме разработки */}
       {showDebug && (
@@ -147,6 +167,13 @@ const App: React.FC = () => {
             </button>
           </div>
           <div>
+            {currentCategoryId ? (
+              <span>Категория: <b>{currentCategoryId}</b></span>
+            ) : (
+              <span>Категория: не выбрана</span>
+            )}
+          </div>
+          <div>
             {currentCaseId ? (
               <span>Кейс: <b>{currentCaseId}</b></span>
             ) : (
@@ -158,6 +185,9 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Переключатель платформы в режиме разработки */}
+      {process.env.NODE_ENV === 'development' && <PlatformSwitcher />}
     </MainLayout>
   );
 };

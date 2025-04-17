@@ -45,16 +45,6 @@ export const PatientNotes: React.FC<PatientNotesProps> = ({ caseDetail }) => {
             </div>
           </div>
         ))}
-        
-        {/* Кнопка продолжения для лучшей видимости */}
-        <div className="mt-8">
-          <button 
-            onClick={handleContinue}
-            className="w-full bg-primary text-white py-3 rounded-lg font-medium"
-          >
-            Продолжить
-          </button>
-        </div>
       </div>
 
       {/* Back Button */}

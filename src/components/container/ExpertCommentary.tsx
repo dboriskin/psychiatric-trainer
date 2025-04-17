@@ -120,16 +120,6 @@ export const ExpertCommentary: React.FC<ExpertCommentaryProps> = ({ caseDetail }
             </p>
           </div>
         )}
-        
-        {/* Кнопка завершения кейса для лучшей видимости */}
-        <div className="mt-8">
-          <button 
-            onClick={handleFinish}
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-medium"
-          >
-            Завершить случай и вернуться к списку категорий
-          </button>
-        </div>
       </div>
 
       {/* Back Button */}

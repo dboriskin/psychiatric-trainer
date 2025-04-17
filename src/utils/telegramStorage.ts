@@ -1,204 +1,135 @@
-import { useCloudStorage, useDeviceStorage } from '../components/telegram/TelegramProvider';
+/**
+ * Упрощенная и надежная реализация хранилища для Telegram Mini Apps с автоматическим fallback на localStorage
+ */
 
 /**
- * Utility for working with Telegram CloudStorage with Promise-based API
+ * Унифицированное хранилище, которое пытается использовать Telegram CloudStorage,
+ * но автоматически переключается на localStorage при ошибках
  */
-export const cloudStorage = {
-  /**
-   * Get an item from CloudStorage
-   */
-  getItem: (key: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      // Get the CloudStorage from the window object if in Telegram environment
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.CloudStorage) || 
-        null;
-
-      if (!storage) {
-        reject(new Error('Telegram CloudStorage is not available'));
-        return;
-      }
-
-      storage.getItem(key, (error: Error | null, value: string) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(value);
-        }
-      });
-    });
-  },
-
-  /**
-   * Set an item in CloudStorage
-   */
-  setItem: (key: string, value: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.CloudStorage) || 
-        null;
-
-      if (!storage) {
-        reject(new Error('Telegram CloudStorage is not available'));
-        return;
-      }
-
-      storage.setItem(key, value, (error: Error | null) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
-  },
-
-  /**
-   * Remove an item from CloudStorage
-   */
-  removeItem: (key: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.CloudStorage) || 
-        null;
-
-      if (!storage) {
-        reject(new Error('Telegram CloudStorage is not available'));
-        return;
-      }
-
-      storage.removeItem(key, (error: Error | null) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
-  },
-
-  /**
-   * Get multiple items from CloudStorage
-   */
-  getItems: (keys: string[]): Promise<Record<string, string>> => {
-    return new Promise((resolve, reject) => {
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.CloudStorage) || 
-        null;
-
-      if (!storage) {
-        reject(new Error('Telegram CloudStorage is not available'));
-        return;
-      }
-
-      storage.getItems(keys, (error: Error | null, values: Record<string, string>) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(values);
-        }
-      });
-    });
-  },
-};
-
-/**
- * Utility for working with Telegram DeviceStorage with Promise-based API
- */
-export const deviceStorage = {
-  /**
-   * Get an item from DeviceStorage
-   */
-  getItem: (key: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.DeviceStorage) || 
-        null;
-
-      if (!storage) {
-        // Fallback to localStorage if DeviceStorage is not available
+export const storage = {
+    /**
+     * Получение значения из хранилища
+     */
+    getItem: (key: string): Promise<string> => {
+      return new Promise((resolve) => {
+        // Сначала пробуем использовать localStorage (он точно работает)
         if (typeof window !== 'undefined' && window.localStorage) {
-          resolve(window.localStorage.getItem(key) || '');
-          return;
+          const localValue = window.localStorage.getItem(key);
+          if (localValue !== null) {
+            resolve(localValue);
+            return;
+          }
         }
-        reject(new Error('Storage is not available'));
-        return;
-      }
-
-      storage.getItem(key, (error: Error | null, value: string) => {
-        if (error) {
-          reject(error);
+        
+        // Затем пробуем Telegram CloudStorage, если он доступен
+        if (typeof window !== 'undefined' && 
+            window.Telegram?.WebApp?.CloudStorage && 
+            typeof window.Telegram.WebApp.CloudStorage.getItem === 'function') {
+          
+          try {
+            window.Telegram.WebApp.CloudStorage.getItem(key, (error: Error | null, value: string) => {
+              if (error || value === undefined || value === null) {
+                // Если произошла ошибка или значение не найдено, возвращаем пустую строку
+                console.warn('CloudStorage.getItem failed:', error);
+                resolve('');
+              } else {
+                // Если успешно получили значение, сохраняем его также в localStorage для следующего раза
+                if (typeof window !== 'undefined' && window.localStorage) {
+                  try {
+                    window.localStorage.setItem(key, value);
+                  } catch (e) {
+                    console.warn('Failed to cache CloudStorage value in localStorage:', e);
+                  }
+                }
+                resolve(value);
+              }
+            });
+          } catch (e) {
+            console.warn('Exception when calling CloudStorage.getItem:', e);
+            resolve('');
+          }
         } else {
-          resolve(value);
+          // CloudStorage недоступен, возвращаем пустую строку
+          resolve('');
         }
       });
-    });
-  },
-
-  /**
-   * Set an item in DeviceStorage
-   */
-  setItem: (key: string, value: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.DeviceStorage) || 
-        null;
-
-      if (!storage) {
-        // Fallback to localStorage if DeviceStorage is not available
+    },
+  
+    /**
+     * Сохранение значения в хранилище
+     */
+    setItem: (key: string, value: string): Promise<void> => {
+      return new Promise((resolve) => {
+        // Всегда сохраняем в localStorage как базовое хранилище
         if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem(key, value);
-          resolve();
-          return;
+          try {
+            window.localStorage.setItem(key, value);
+          } catch (e) {
+            console.warn('Failed to save to localStorage:', e);
+          }
         }
-        reject(new Error('Storage is not available'));
-        return;
-      }
-
-      storage.setItem(key, value, (error: Error | null) => {
-        if (error) {
-          reject(error);
+        
+        // Затем пробуем сохранить в Telegram CloudStorage, если он доступен
+        if (typeof window !== 'undefined' && 
+            window.Telegram?.WebApp?.CloudStorage && 
+            typeof window.Telegram.WebApp.CloudStorage.setItem === 'function') {
+          
+          try {
+            window.Telegram.WebApp.CloudStorage.setItem(key, value, (error: Error | null) => {
+              if (error) {
+                console.warn('CloudStorage.setItem failed:', error);
+              }
+              // В любом случае считаем операцию успешной, т.к. мы уже сохранили в localStorage
+              resolve();
+            });
+          } catch (e) {
+            console.warn('Exception when calling CloudStorage.setItem:', e);
+            resolve();
+          }
         } else {
+          // CloudStorage недоступен, но мы уже сохранили в localStorage, поэтому считаем операцию успешной
           resolve();
         }
       });
-    });
-  },
-
-  /**
-   * Remove an item from DeviceStorage
-   */
-  removeItem: (key: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const storage = 
-        (typeof window !== 'undefined' && 
-         window.Telegram?.WebApp?.DeviceStorage) || 
-        null;
-
-      if (!storage) {
-        // Fallback to localStorage if DeviceStorage is not available
+    },
+  
+    /**
+     * Удаление значения из хранилища
+     */
+    removeItem: (key: string): Promise<void> => {
+      return new Promise((resolve) => {
+        // Удаляем из localStorage
         if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.removeItem(key);
-          resolve();
-          return;
+          try {
+            window.localStorage.removeItem(key);
+          } catch (e) {
+            console.warn('Failed to remove from localStorage:', e);
+          }
         }
-        reject(new Error('Storage is not available'));
-        return;
-      }
-
-      storage.removeItem(key, (error: Error | null) => {
-        if (error) {
-          reject(error);
+        
+        // Пробуем удалить из Telegram CloudStorage, если он доступен
+        if (typeof window !== 'undefined' && 
+            window.Telegram?.WebApp?.CloudStorage && 
+            typeof window.Telegram.WebApp.CloudStorage.removeItem === 'function') {
+          
+          try {
+            window.Telegram.WebApp.CloudStorage.removeItem(key, (error: Error | null) => {
+              if (error) {
+                console.warn('CloudStorage.removeItem failed:', error);
+              }
+              resolve();
+            });
+          } catch (e) {
+            console.warn('Exception when calling CloudStorage.removeItem:', e);
+            resolve();
+          }
         } else {
           resolve();
         }
       });
-    });
-  },
-};
+    }
+  };
+  
+  // Для совместимости с существующим кодом
+  export const cloudStorage = storage;
+  export const deviceStorage = storage;

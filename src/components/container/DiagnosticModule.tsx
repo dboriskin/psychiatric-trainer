@@ -126,16 +126,6 @@ export const DiagnosticModule: React.FC<DiagnosticModuleProps> = ({ caseDetail }
                 {caseDetail.diagnosisOptions.find(d => d.isCorrect)?.explanation}
               </p>
             </div>
-
-            {/* Кнопка перехода к лечению для лучшей видимости */}
-            <div className="mt-6">
-              <button 
-                onClick={handleContinue}
-                className="w-full bg-primary text-white py-3 rounded-lg font-medium"
-              >
-                Перейти к лечению
-              </button>
-            </div>
           </div>
         )}
       </div>
@@ -145,14 +135,14 @@ export const DiagnosticModule: React.FC<DiagnosticModuleProps> = ({ caseDetail }
 
       {/* Main Button */}
       <TelegramMainButton
-        text={showResult ? "Перейти к лечению" : "Подтвердить диагноз"}
+        text={showResult ? "К лечению" : "Подтвердить диагноз"}
         onClick={handleContinue}
         disabled={!showResult && !selectedDiagnosis}
       />
       
       {/* Fallback кнопки для браузера */}
       <ButtonFallback
-        mainButtonText={showResult ? "Перейти к лечению" : "Подтвердить диагноз"}
+        mainButtonText={showResult ? "К лечению" : "Подтвердить диагноз"}
         onMainButtonClick={handleContinue}
         onBackButtonClick={handleBack}
       />
